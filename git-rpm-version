@@ -1,0 +1,148 @@
+#!/bin/bash
+
+function usage() {
+cat << EOF
+Usage: $0 [<options>] <commit-ish>...
+
+Compute the rpm version and release based on the most recent tag matching v*
+
+    Tree                         RPM Name
+    ---------------------------  --------------------------
+    <dirty working tree>         foo-2.0.0-1.dirty.rpm
+    * e553fd9 (tag: v2.0.0)      foo-2.0.0-1.rpm
+    * 9dbedc2 (tag: v2.0.0-rc1)  foo-2.0.0-0.rc1.rpm
+    * 0453d18                    foo-1.0.1-1.2.g0453d18.rpm
+    *   f8cfa92                  foo-1.0.1-1.1.gf8cfa92.rpm
+    |\
+    | * 33dcc6f (tag: v1.0.1)    foo-1.0.1-1.rpm
+    * | 1afd2e4                  foo-1.0.0-1.1.g1afd2e4.rpm
+    |/
+    * fb631ec (tag: v1.0.0)      foo-1.0.0-1.rpm
+    * 205005c                    foo-0-g205005c.rpm
+
+If the code being built does not exactly match a release tag, the rpm release
+will contain additional build information to help identify what source it came
+from.
+
+    foo-1.2.3-1.4.g2f3cc98.dirty
+    ^   ^     ^ ^ ^^       ^
+    |   |     | | ||       If the working tree is dirty
+    |   |     | | |Hash of current commit if different than the tag
+    |   |     | | Indicates that the following is a Git hash
+    |   |     | Number of additional commits ahead of the tag
+    |   |     0 if release candidate, 1 otherwise
+    |   Most recent tagged release
+    Package name
+
+Release tags must be annotated tags and be in the form vX.Y.Z or vX.Y.Z-rcW
+where W, X, Y, and Z are integers. vX.Y.Z is assumed to be newer than
+vX.Y.Z-rcW. Otherwise, X, Y, Z, and W are compared one by one. If the numbers
+are different, the larger number is considered newer. If the numbers are equal,
+the next number is compared.
+
+This algorithm follows the [Fedora convention][1] for mapping software releases
+to rpm version and release numbers.
+
+  [1]: http://fedoraproject.org/wiki/Packaging%3aNamingGuidelines#NonNumericRelease
+
+Options:
+  -h Show this message and exit
+  -r Print the RPM release
+  -v Print the RPM version
+EOF
+}
+
+# Print the RPM version associated with the given commit-ish or the current
+# state of the repository if no commit-ish is specified
+function version() {
+    # git describe does the heavy lifting to figure out what tag is most recent
+    # and how different we are from that tagged commit
+    git_describe=$(git describe --always --match "v*" $1)
+    if [ $? -ne 0 ]; then
+        exit 1
+    fi
+    if [ ${git_describe:0:1} = v ]; then
+        echo $git_describe |
+            # Remove leading 'v'
+            sed -e 's/v//' |
+            # Remove release candidate; it will change the rpm release instead
+            sed -e 's/-rc[0-9]*//' |
+            # Remove git hash; it will change the rpm release instead
+            sed -e 's/-[0-9]\+-g[0-9a-f]\+//' |
+            # '-' is disallowed in rpm versions; replace all '-' with '.'
+            sed -e 's/-/./g'
+    else
+        # Use a version of 0 if no release tag is found
+        echo 0
+    fi
+}
+
+# Print the RPM release associated with the given commit-ish or the current
+# state of the repository if no commit-ish is specified
+function release() {
+    # git describe does the heavy lifting to figure out what tag is most recent
+    # and how different we are from that tagged commit
+    if [ $# -eq 0 ]; then
+        git_describe=$(git describe --always --dirty --match "v*")
+    else
+        git_describe=$(git describe --always --match "v*" $1)
+    fi
+    if [ $? -ne 0 ]; then
+        exit 1
+    fi
+    if [ ${git_describe:0:1} = v ]; then
+        # Remove the version
+        no_version=$(echo "$git_describe" | sed -e 's/[^-]\+//')
+        if [ -z "${git_describe##*rc*}" ]; then
+            # Release candidate
+            release="0$no_version"
+        else
+            # Full release
+            release="1$no_version"
+        fi
+    else
+        # $git_describe is just a git hash in this case
+        release="g$git_describe"
+    fi
+    # '-' is disallowed in rpm versions; replace all '-' with '.'
+    echo $release | sed -e 's/-/./g'
+}
+
+do_release=false
+do_version=false
+while getopts hrv option; do
+    case $option in
+        h)
+            usage
+            exit
+            ;;
+        r)
+            do_release=true
+            ;;
+        v)
+            do_version=true
+            ;;
+    esac
+done
+if [ $OPTIND -eq 0 ]; then
+    usage
+    exit
+fi
+shift $((OPTIND - 1))
+if [ $# -eq 0 ]; then
+    if $do_version; then
+        version
+    fi
+    if $do_release; then
+        release
+    fi
+else
+    for commitish in "$@"; do
+    if $do_version; then
+        version $commitish
+    fi
+    if $do_release; then
+        release $commitish
+    fi
+    done
+fi

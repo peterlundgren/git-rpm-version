@@ -1,0 +1,24 @@
+git init >/dev/null
+# Specify everything so that the commit hash will be the same every time
+export GIT_AUTHOR_NAME="foo"
+export GIT_COMMITTER_NAME="foo"
+export GIT_AUTHOR_EMAIL="foo@example.com"
+export GIT_COMMITTER_EMAIL="foo@example.com"
+export GIT_AUTHOR_DATE="1970-01-01T00:00:00+0000"
+export GIT_COMMITTER_DATE="1970-01-01T00:00:00+0000"
+git commit --allow-empty -m 'A' >/dev/null
+git tag -a -m 'v1.2.3-rc4' v1.2.3-rc4
+git commit --allow-empty -m 'B' >/dev/null
+unset GIT_AUTHOR_NAME
+unset GIT_COMMITTER_NAME
+unset GIT_AUTHOR_EMAIL
+unset GIT_COMMITTER_EMAIL
+unset GIT_AUTHOR_DATE
+unset GIT_COMMITTER_DATE
+
+assert_raises "$gitrpmversion"
+assert_raises "$gitrpmversion -h"
+assert "$gitrpmversion -r" "0.rc4.1.gca4a874"
+assert "$gitrpmversion -v" "1.2.3"
+assert "$gitrpmversion -rv" "1.2.3\n0.rc4.1.gca4a874"
+assert "$gitrpmversion -vr" "1.2.3\n0.rc4.1.gca4a874"

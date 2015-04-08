@@ -1,0 +1,6 @@
+assert_raises "$gitrpmversion"
+assert_raises "$gitrpmversion -h"
+assert_raises "$gitrpmversion -r" 1
+assert_raises "$gitrpmversion -v" 1
+assert_raises "$gitrpmversion -rv" 1
+assert_raises "$gitrpmversion -vr" 1
