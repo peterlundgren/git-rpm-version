@@ -24,8 +24,9 @@ If the code being built does not exactly match a release tag, the rpm release
 will contain additional build information to help identify what source it came
 from.
 
-    foo-1.2.3-1.4.g2f3cc98.dirty
-    ^   ^     ^ ^ ^^       ^
+    foo-1.2.3-1.4.g2f3cc98.dirty.2015.04.26.14.29.57
+    ^   ^     ^ ^ ^^       ^     ^
+    |   |     | | ||       |     Optional timestamp with -t option
     |   |     | | ||       If the working tree is dirty
     |   |     | | |Hash of current commit if different than the tag
     |   |     | | Indicates that the following is a Git hash
@@ -49,6 +50,7 @@ Options:
   -d MARK  Append MARK instead of dirty if the working tree is dirty
   -h       Show this message and exit
   -r       Print the RPM release
+  -t       Include a timestamp if the working tree is dirty
   -v       Print the RPM version
 EOF
 }
@@ -112,7 +114,7 @@ function release() {
 do_release=false
 do_version=false
 dirty_mark="-dirty"
-while getopts d:hrv option; do
+while getopts d:hrtv option; do
     case $option in
         d)
             dirty_mark="-$OPTARG"
@@ -123,6 +125,9 @@ while getopts d:hrv option; do
             ;;
         r)
             do_release=true
+            ;;
+        t)
+            dirty_mark="-dirty-$(date +%Y.%m.%d.%H.%M.%S)"
             ;;
         v)
             do_version=true
