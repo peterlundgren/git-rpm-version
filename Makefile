@@ -3,9 +3,14 @@ PREFIX?=/usr/local
 
 all: check
 
+test/assert.sh/assert.sh:
+	$(error assert.sh submodule is missing \
+	        (use "git submodule update --init" \
+	        to clone the missing submodules))
+
 .PHONY: check test
 test: check
-check:
+check: test/assert.sh/assert.sh
 	@cd test && ./run-tests
 
 .PHONY: install
