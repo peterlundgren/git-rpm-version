@@ -46,9 +46,10 @@ to rpm version and release numbers.
   [1]: http://fedoraproject.org/wiki/Packaging%3aNamingGuidelines#NonNumericRelease
 
 Options:
-  -h Show this message and exit
-  -r Print the RPM release
-  -v Print the RPM version
+  -d MARK  Append MARK instead of dirty if the working tree is dirty
+  -h       Show this message and exit
+  -r       Print the RPM release
+  -v       Print the RPM version
 EOF
 }
 
@@ -83,7 +84,7 @@ function release() {
     # git describe does the heavy lifting to figure out what tag is most recent
     # and how different we are from that tagged commit
     if [ $# -eq 0 ]; then
-        git_describe=$(git describe --always --dirty --match "v*")
+        git_describe=$(git describe --always --dirty="$dirty_mark" --match "v*")
     else
         git_describe=$(git describe --always --match "v*" $1)
     fi
@@ -110,8 +111,12 @@ function release() {
 
 do_release=false
 do_version=false
-while getopts hrv option; do
+dirty_mark="-dirty"
+while getopts d:hrv option; do
     case $option in
+        d)
+            dirty_mark="-$OPTARG"
+            ;;
         h)
             usage
             exit
