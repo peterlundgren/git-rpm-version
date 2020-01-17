@@ -3,7 +3,7 @@
 . ./assert.sh/assert.sh
 
 testdir=$(pwd)
-gitrpmversion=$(readlink -m "$testdir"/../git-rpm-version)
+gitrpmversion="${testdir}/../git-rpm-version"
 
 for test in "$testdir"/test-*; do
     tempdir=$(mktemp -d)
