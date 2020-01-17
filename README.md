@@ -40,4 +40,4 @@ the next number is compared.
 This algorithm follows the [Fedora convention][1] for mapping software releases
 to rpm version and release numbers.
 
-  [1]: http://fedoraproject.org/wiki/Packaging%3aNamingGuidelines#NonNumericRelease
+  [1]: https://docs.fedoraproject.org/en-US/packaging-guidelines/Versioning/
