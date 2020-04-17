@@ -69,7 +69,7 @@ function version() {
             # Remove leading 'v'
             sed -e 's/v//' |
             # Remove release candidate; it will change the rpm release instead
-            sed -e 's/-rc[0-9]*//' |
+            sed -e 's/-rc\.*[0-9]*//' |
             # Remove git hash; it will change the rpm release instead
             sed -e 's/-[0-9]\{1,\}-g[0-9a-f]\{1,\}//' |
             # '-' is disallowed in rpm versions; replace all '-' with '.'
