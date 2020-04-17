@@ -94,8 +94,8 @@ function release() {
         exit 1
     fi
     if [ ${git_describe:0:1} = v ]; then
-        # Remove the version and massage semver 2.0.0 rc.X to semver 1.0.0 rcX
-        no_version=$(echo "$git_describe" | sed -e 's/[^-]\{1,\}//' -e 's/rc\./rc/')
+        # Remove the version
+        no_version=$(echo "$git_describe" | sed -e 's/[^-]\{1,\}//')
         if [ -z "${git_describe##*rc*}" ]; then
             # Release candidate
             release="0$no_version"

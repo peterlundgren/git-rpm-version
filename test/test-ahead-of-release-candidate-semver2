@@ -18,7 +18,7 @@ unset GIT_COMMITTER_DATE
 
 assert_raises "$gitrpmversion"
 assert_raises "$gitrpmversion -h"
-assert "$gitrpmversion -r" "0.rc4.1.gca4a874"
+assert "$gitrpmversion -r" "0.rc.4.1.gca4a874"
 assert "$gitrpmversion -v" "1.2.3"
-assert "$gitrpmversion -rv" "1.2.3\n0.rc4.1.gca4a874"
-assert "$gitrpmversion -vr" "1.2.3\n0.rc4.1.gca4a874"
+assert "$gitrpmversion -rv" "1.2.3\n0.rc.4.1.gca4a874"
+assert "$gitrpmversion -vr" "1.2.3\n0.rc.4.1.gca4a874"

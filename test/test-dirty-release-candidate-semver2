@@ -20,7 +20,7 @@ unset GIT_COMMITTER_DATE
 
 assert_raises "$gitrpmversion"
 assert_raises "$gitrpmversion -h"
-assert "$gitrpmversion -r" "0.rc4.dirty"
+assert "$gitrpmversion -r" "0.rc.4.dirty"
 assert "$gitrpmversion -v" "1.2.3"
-assert "$gitrpmversion -rv" "1.2.3\n0.rc4.dirty"
-assert "$gitrpmversion -vr" "1.2.3\n0.rc4.dirty"
+assert "$gitrpmversion -rv" "1.2.3\n0.rc.4.dirty"
+assert "$gitrpmversion -vr" "1.2.3\n0.rc.4.dirty"
